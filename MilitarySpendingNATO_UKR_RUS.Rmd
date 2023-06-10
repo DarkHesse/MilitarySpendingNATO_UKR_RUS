@@ -1,0 +1,166 @@
+---
+title: "Military spending of NATO, Ukraine, and Russia since 1990 compared"
+subtitle: "An exploratorive data analysis"
+author: "Thomas McKinney"
+date: "June 10th 2023"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    theme: paper
+    df_print: paged
+---
+
+```{r, Setup, message=FALSE}
+library(tidyverse)
+library(janitor)
+library(here)
+```
+# Version:
+Last change: June 10th 2023
+
+# Introduction
+I have recently started, to learn R. This is very much a first attempt at a R Notebook, and work in progress. I'm happy for any tipps or criticism. :-)
+
+# Loading and arranging the Data
+## % of Government spending
+```{r, ReadData, message=FALSE}
+dft_government_spending <- read_csv("240608_WB_MilSpend_GovtSpen_NATO_RUS_UKR_1990_2022.csv")
+dft_government_spending <- as_tibble(dft_government_spending) %>% clean_names()
+```
+
+## Min, Max, Mean of % of Government spending by Country
+```{r, message=FALSE}
+dft_sum_government_spending <- dft_government_spending %>% 
+  select(!c(series_code, country_name, natojoin, nato2024)) %>% 
+  pivot_longer(!country_code, names_to = "year", values_to = "spending", values_drop_na = TRUE) %>% 
+  group_by(country_code) %>%
+  summarise(
+    mean = mean(spending),
+    min = min(spending),
+    max = max(spending)
+  ) %>% 
+  arrange(desc(mean)) %>%
+  as_tibble()
+```
+
+## Min, Max, Mean of % of Government spending by Year
+```{r, message=FALSE}
+dft_sum_government_spending_PA <- dft_government_spending %>% 
+  select(!c(series_code, country_name, country_code, natojoin, nato2024)) %>% 
+  pivot_longer(
+    cols = starts_with("x"),
+    names_to = "Year",
+    names_prefix = "x",
+    values_to = "spending",
+    values_drop_na = TRUE
+  ) %>% 
+  mutate(Year = as.integer(Year)) %>% 
+  arrange(desc(Year)) %>% 
+  group_by(Year) %>% 
+  summarise(
+    mean = mean(spending),
+    min = min(spending),
+    max = max(spending)
+  ) %>%
+  as_tibble()
+```
+
+
+```{r}
+dft_GDP <- read_csv("240608_WB_MilSpend_GDP_NATO_RUS_UKR_1990_2022.csv")
+dft_GDP <- as_tibble(dft_GDP) %>% clean_names()
+
+dft_sum_GDP <- dft_GDP %>% 
+  select(!c(series_code, country_name, natojoin, nato2024)) %>% 
+  pivot_longer(!country_code, names_to = "year", values_to = "spending", values_drop_na = TRUE) %>% 
+  group_by(country_code) %>%
+  summarise(
+    mean = mean(spending),
+    min = min(spending),
+    max = max(spending)
+  ) %>% 
+  arrange(desc(mean)) %>% 
+  as_tibble()
+
+```
+
+
+# Overview over the Data
+## % of Government spending
+```{r, OverviewGovtSPending}
+ggplot(dft_sum_government_spending)+
+  geom_errorbar(
+    mapping = aes(
+      x=country_code, ymin=min, ymax=max
+      ), 
+    width = 1
+    )+
+  geom_point(
+    mapping = aes(
+      x = country_code,
+      y = mean,
+    )
+  )+
+  scale_x_discrete(
+    labels=abbreviate
+  )+
+  labs(
+    title="Summary of Military spending as % of Government spending by Country", 
+    subtitle = "Mean, Min and Max for the years 1990 - 2022 where available."
+  )
+
+dft_sum_government_spending
+```
+### Summary by year
+```{r}
+ggplot(dft_sum_government_spending_PA)+
+  geom_errorbar(
+    mapping = aes(
+      x=Year, ymin=min, ymax=max
+      ), 
+    width = 1
+    )+
+  geom_point(
+    mapping = aes(
+      x = Year,
+      y = mean,
+    )
+  )+
+  labs(
+    title="Summary of Military spending as % of Government spending by Year", 
+    subtitle = "Mean, Min and Max for the years 1990 - 2022 where available."
+  )
+
+dft_sum_government_spending_PA
+```
+
+## % of GDP
+```{r, OverviewGDP}
+ggplot(dft_sum_GDP)+
+  geom_errorbar(
+    mapping = aes(
+      x=country_code, ymin=min, ymax=max
+      ), 
+    width = 1
+    )+
+  geom_point(
+    mapping = aes(
+      x = country_code,
+      y = mean,
+    )
+  )+
+  scale_x_discrete(
+    labels=abbreviate
+  )+
+  labs(
+    title="Summary of Military spending as % of Government spending by Country", 
+    subtitle = "Mean, Min and Max for the years 1990 - 2022 where available."
+  )
+
+dft_sum_GDP
+```
+## Summary by year
+```{r}
+summary(dft_GDP)
+```
