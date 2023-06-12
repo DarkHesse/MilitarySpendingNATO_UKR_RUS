@@ -16,20 +16,90 @@ library(tidyverse)
 library(janitor)
 library(here)
 ```
+
 # Version:
-Last change: June 10th 2023
+
+Last change: June 12th 2023
 
 # Introduction
-I have recently started, to learn R. This is very much a first attempt at a R Notebook, and work in progress. I'm happy for any tipps or criticism. :-)
+
+I have recently started, to learn R. This is very much a first attempt at a R Notebook, and work in progress. I'm happy for any tips or criticism. :-)
+
+In this notebook, I'm looking at the defense spending of countries that are more or less involved in the ongoing Russian war of aggression against the Ukraine. Meaning that I will look at belligerent nations, as well as the NATO countries which support Ukraine with arms, money, and goods.
+
+The start point of my analysis will be 1990, i.e. the end of the Cold War. I will look at the most up to date Data available at SIPRI and the World Bank. For most countries this is 2021.
+
+Instead of looking at the numbers in cash, I will use two relative indicators: \* How much of their annual budget did the Nations spend on their military? (Budget) \* How much of their annual GDP did the Nations spend on their military? (GDP)
+
+I am assuming, that both values allow me to answer the question: how willing a country was to fund its military. Most governments set their budgets in advance by taking predicted financial forecasts in account. Depending on the actual financial development of a country, one monetary unit will pay for X military spending. So the *actual* spending per year is dependent on the value of the nations currency. Other factors (prices of raw materials, problems in the defense eco system) also contribute to the actual exchange of money for military might per year. Therefor I have chosen the above mentioned indicators. My theory being, that both indicators will provide me with an idea of how much the governments in question were willing to spend on the military. Meaning, I am not simply trying to look at economic figures, but the political will of the respective governments.
+
+I am very much aware, that neither budget nor GDP give the full picture. This would require further qualitative analysis of government documents, experts opinions, NATO summits, etc. I am hoping though, that the numbers will show some trends, and provide some insights that warrant further investigation.
 
 # Loading and arranging the Data
+
+## Data Worldwide
+
+### Government spending
+
+```{r, message = FALSE}
+dft_government_spending_ww <- read.csv("240612_SIPRI_MilSpend_GovSpend_1990_2022.csv")
+dft_government_spending_ww <- as_tibble(dft_government_spending_ww) %>% clean_names()
+dft_government_spending_ww
+```
+
+#### Finding Min, Max, Mean of % of Government spending by all countries world wide
+
+```{r, message=FALSE}
+dft_sum_government_spending_ww <- dft_government_spending_ww %>% 
+  select(!c(region, subregion)) %>% 
+  pivot_longer(!country, names_to = "year", values_to = "spending", values_drop_na = TRUE) %>% 
+  summarise(
+    mean = mean(spending),
+    min = min(spending),
+    max = max(spending)
+  ) %>% 
+  arrange(desc(mean)) %>%
+  as_tibble()
+
+dft_sum_government_spending_ww
+```
+
+### % of GDP
+
+```{r}
+dft_GDP_ww <- read.csv("240612_SIPRI_MilSpend_GDP_1990_2022.csv")
+dft_GDP_ww <- as_tibble(dft_GDP_ww) %>% clean_names()
+dft_GDP_ww
+```
+
+#### Finding Min, Max, Mean of % of GDP spending by all countries world wide
+
+```{r, message=FALSE}
+dft_sum_GDP_ww <- dft_GDP_ww %>% 
+  select(!c(region, subregion)) %>% 
+  pivot_longer(!country, names_to = "year", values_to = "spending", values_drop_na = TRUE) %>% 
+  summarise(
+    mean = mean(spending),
+    min = min(spending),
+    max = max(spending)
+  ) %>% 
+  arrange(desc(mean)) %>%
+  as_tibble()
+
+dft_sum_GDP_ww
+
+```
+
 ## % of Government spending
+
 ```{r, ReadData, message=FALSE}
 dft_government_spending <- read_csv("240608_WB_MilSpend_GovtSpen_NATO_RUS_UKR_1990_2022.csv")
 dft_government_spending <- as_tibble(dft_government_spending) %>% clean_names()
+dft_government_spending
 ```
 
 ## Min, Max, Mean of % of Government spending by Country
+
 ```{r, message=FALSE}
 dft_sum_government_spending <- dft_government_spending %>% 
   select(!c(series_code, country_name, natojoin, nato2024)) %>% 
@@ -42,9 +112,11 @@ dft_sum_government_spending <- dft_government_spending %>%
   ) %>% 
   arrange(desc(mean)) %>%
   as_tibble()
+dft_sum_government_spending
 ```
 
 ## Min, Max, Mean of % of Government spending by Year
+
 ```{r, message=FALSE}
 dft_sum_government_spending_PA <- dft_government_spending %>% 
   select(!c(series_code, country_name, country_code, natojoin, nato2024)) %>% 
@@ -64,10 +136,10 @@ dft_sum_government_spending_PA <- dft_government_spending %>%
     max = max(spending)
   ) %>%
   as_tibble()
+dft_sum_government_spending_PA
 ```
 
-
-```{r}
+```{r, message=FALSE}
 dft_GDP <- read_csv("240608_WB_MilSpend_GDP_NATO_RUS_UKR_1990_2022.csv")
 dft_GDP <- as_tibble(dft_GDP) %>% clean_names()
 
@@ -82,12 +154,13 @@ dft_sum_GDP <- dft_GDP %>%
   ) %>% 
   arrange(desc(mean)) %>% 
   as_tibble()
-
+dft_GDP
 ```
 
+# Analysis
 
-# Overview over the Data
 ## % of Government spending
+
 ```{r, OverviewGovtSPending}
 ggplot(dft_sum_government_spending)+
   geom_errorbar(
@@ -112,7 +185,9 @@ ggplot(dft_sum_government_spending)+
 
 dft_sum_government_spending
 ```
+
 ### Summary by year
+
 ```{r}
 ggplot(dft_sum_government_spending_PA)+
   geom_errorbar(
@@ -136,6 +211,7 @@ dft_sum_government_spending_PA
 ```
 
 ## % of GDP
+
 ```{r, OverviewGDP}
 ggplot(dft_sum_GDP)+
   geom_errorbar(
@@ -160,7 +236,9 @@ ggplot(dft_sum_GDP)+
 
 dft_sum_GDP
 ```
+
 ## Summary by year
+
 ```{r}
 summary(dft_GDP)
 ```
