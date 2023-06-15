@@ -9,6 +9,8 @@ output:
     number_sections: true
     theme: paper
     df_print: paged
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, Setup, message=FALSE}
@@ -87,8 +89,29 @@ dft_sum_GDP_ww <- dft_GDP_ww %>%
   as_tibble()
 
 dft_sum_GDP_ww
-
 ```
+
+Ok, so it seems, that on overage Governments allocated 7.65% of their annual budget to the military. With the minimum being 0.07% and the maximum being 57.5%. In the same time period countries spent an average of 2.25% of their GDP on the military. With the minimum being 0% and the maximum being 117%.
+
+Let's take a look at who the big spender/s was/were.
+
+```{r BigSpender, message=FALSE}
+dft_government_spending_ww_BigSpender <- dft_government_spending_ww %>% 
+  select(!c(region, subregion)) %>% 
+  pivot_longer(!country, names_to = "year", values_to = "spending", values_drop_na = TRUE) %>% 
+  arrange(desc(spending)) %>% 
+  slice_head(n=10)
+
+dft_sum_GDP_ww_BigSpender <- dft_GDP_ww %>% select(!c(region, subregion)) %>% 
+  pivot_longer(!country, names_to = "year", values_to = "spending", values_drop_na = TRUE) %>% 
+  arrange(desc(spending)) %>% 
+  slice_head(n=10)
+
+
+dft_government_spending_ww_BigSpender
+dft_sum_GDP_ww_BigSpender
+```
+
 
 ## % of Government spending
 
