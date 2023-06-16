@@ -7,21 +7,27 @@ output:
   html_document:
     toc: true
     number_sections: true
-    theme: paper
+    theme: journal
     df_print: paged
 editor_options: 
   chunk_output_type: console
 ---
 
-```{r, Setup, message=FALSE}
+```{r, Setup, message=FALSE, include=FALSE}
 library(tidyverse)
 library(janitor)
 library(here)
 ```
 
+# tl;dr
+
+- Countries seem to be more willing to invest a significant amout of their Government spending/GDP on military matters, if they are involved in (civil-)wars. 
+
+- No NATO member -not even the USA- or Russia was among the top 10 of the big spenders since 1990 in terms of % of government spending or % of GDP. Ukraine was.
+
 # Version:
 
-Last change: June 15th 2023
+Last change: June 16th 2023
 
 # Introduction
 
@@ -31,7 +37,11 @@ In this notebook, I'm looking at the defense spending of countries that are more
 
 The start point of my analysis will be 1990, i.e. the end of the Cold War. I will look at the most up to date Data available at SIPRI and the World Bank. For most countries this is 2021.
 
-Instead of looking at the numbers in cash, I will use two relative indicators: \* How much of their annual budget did the Nations spend on their military? (Budget) \* How much of their annual GDP did the Nations spend on their military? (GDP)
+Instead of looking at the numbers in cash, I will use two relative indicators: 
+
+\* How much of their annual budget did the Nations spend on their military? (Budget) 
+
+\* How much of their annual GDP did the Nations spend on their military? (GDP)
 
 I am assuming, that both values allow me to answer the question: how willing a country was to fund its military. Most governments set their budgets in advance by taking predicted financial forecasts in account. Depending on the actual financial development of a country, one monetary unit will pay for X military spending. So the *actual* spending per year is dependent on the value of the nations currency. Other factors (prices of raw materials, problems in the defense eco system) also contribute to the actual exchange of money for military might per year. Therefor I have chosen the above mentioned indicators. My theory being, that both indicators will provide me with an idea of how much the governments in question were willing to spend on the military. Meaning, I am not simply trying to look at economic figures, but the political will of the respective governments.
 
@@ -43,7 +53,7 @@ I am very much aware, that neither budget nor GDP give the full picture. This wo
 
 ### Government spending
 
-```{r, message = FALSE}
+```{r, message = FALSE, include=FALSE}
 dft_government_spending_ww <- read.csv("240612_SIPRI_MilSpend_GovSpend_1990_2022.csv")
 dft_government_spending_ww <- as_tibble(dft_government_spending_ww) %>% clean_names()
 dft_government_spending_ww
@@ -62,16 +72,13 @@ dft_sum_government_spending_ww <- dft_government_spending_ww %>%
   ) %>% 
   arrange(desc(mean)) %>%
   as_tibble()
-
-dft_sum_government_spending_ww
 ```
 
 ### % of GDP
 
-```{r}
+```{r message=FALSE, include=FALSE}
 dft_GDP_ww <- read.csv("240612_SIPRI_MilSpend_GDP_1990_2022.csv")
 dft_GDP_ww <- as_tibble(dft_GDP_ww) %>% clean_names()
-dft_GDP_ww
 ```
 
 #### Finding Min, Max, Mean of % of GDP spending by all countries world wide
@@ -87,8 +94,6 @@ dft_sum_GDP_ww <- dft_GDP_ww %>%
   ) %>% 
   arrange(desc(mean)) %>%
   as_tibble()
-
-dft_sum_GDP_ww
 ```
 
 Ok, so it seems, that on overage Governments allocated 7.65% of their annual budget to the military. With the minimum being 0.07% and the maximum being 57.5%. In the same time period countries spent an average of 2.25% of their GDP on the military. With the minimum being 0% and the maximum being 117%.
@@ -106,19 +111,26 @@ dft_sum_GDP_ww_BigSpender <- dft_GDP_ww %>% select(!c(region, subregion)) %>%
   pivot_longer(!country, names_to = "year", values_to = "spending", values_drop_na = TRUE) %>% 
   arrange(desc(spending)) %>% 
   slice_head(n=10)
+```
 
-
+```{r message=FALSE}
 dft_government_spending_ww_BigSpender
 dft_sum_GDP_ww_BigSpender
 ```
 
+The top three spenders on both accounts were Kuwait, Sudan, and Eritrea. Which is understandable, if we check out, what was happening during these years. For Kuwait the Years 1990 and 1991 were the years of the [Second Gulf War](https://ucdp.uu.se/conflict/371), during which it was attacked by Iraq. In 1999 the country of Sudan was in the midst of a civil war, ending with the [independence of South Sudan](https://en.wikipedia.org/wiki/Second_Sudanese_Civil_War). The tables were somewhat turned for Eritrea. 1999 falls in the countrys [War of Independence from Ethiopia](https://en.wikipedia.org/wiki/Eritrean%E2%80%93Ethiopian_War).
+
+So, we do not have a lot surprises here. The big spenders were involved in shooting (civil-)wars. Out of the countries that are the focus of this notebook, only the Ukraine makes the top 10, by allocating 33.55% of it's GDP to the military in 2022; ie the year it was [attacked by Russia](https://www.eeas.europa.eu/eeas/un-general-assembly-demands-russian-federation-withdraw-all-military-forces-territory-ukraine_en).
+
+***First (underwhelming) thesis:*** Countries seem to be more willing to invest a significant amout of their Government spending/GDP on military matters, if they are involved in (civil-)wars. 
+
+***Second thesis:*** No NATO member -not even the USA- or Russia was among the top 10 of the big spenders since 1990.This is obviously only true as fars as relative values are concerned. In USD we find plenty of the before mentioned nations among military spenders. [With the US obviously in first place, and Russia in third](https://www.statista.com/statistics/262742/countries-with-the-highest-military-spending/). In my opinion (with exception of Saudi Arabia) countries like Eritrea and Sudan do not rank among the big spenders in hard currency, because of their way weaker economic power. Large %'s of "small" GDPs are still small in USD. (insert shrug emoji here)
 
 ## % of Government spending
 
-```{r, ReadData, message=FALSE}
+```{r, ReadData, message=FALSE, include=FALSE}
 dft_government_spending <- read_csv("240608_WB_MilSpend_GovtSpen_NATO_RUS_UKR_1990_2022.csv")
 dft_government_spending <- as_tibble(dft_government_spending) %>% clean_names()
-dft_government_spending
 ```
 
 ## Min, Max, Mean of % of Government spending by Country
@@ -162,10 +174,13 @@ dft_sum_government_spending_PA <- dft_government_spending %>%
 dft_sum_government_spending_PA
 ```
 
-```{r, message=FALSE}
+```{r, message=FALSE, include=FALSE}
 dft_GDP <- read_csv("240608_WB_MilSpend_GDP_NATO_RUS_UKR_1990_2022.csv")
 dft_GDP <- as_tibble(dft_GDP) %>% clean_names()
+```
 
+
+```{r, message=FALSE}
 dft_sum_GDP <- dft_GDP %>% 
   select(!c(series_code, country_name, natojoin, nato2024)) %>% 
   pivot_longer(!country_code, names_to = "year", values_to = "spending", values_drop_na = TRUE) %>% 
