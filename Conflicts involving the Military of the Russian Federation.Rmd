@@ -1,0 +1,114 @@
+---
+title: "Conflicts involving the Military of the Russian Federation"
+subtitle: "An overview"
+author: "Thomas McKinney"
+date: "June 17th 2023"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    theme: journal
+    df_print: paged
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+# tl;dr
+
+- Countries seem to be more willing to invest a significant amout of their Government spending/GDP on military matters, if they are involved in (civil-)wars. 
+
+- No NATO member -not even the USA- or Russia was among the top 10 of the big spenders since 1990 in terms of % of government spending or % of GDP. Ukraine was.
+
+# Version:
+
+Last change: June 17th 2023
+
+# Introduction
+
+# Libraries
+
+```{r, Setup, message=FALSE}
+library(tidyverse)
+library(janitor)
+library(here)
+library(ggmap)
+library(stringr)
+library(maps)
+```
+
+# Loading the Data
+
+```{r, message=FALSE}
+dft_presidents <- read_csv("Russian_Presidents.csv") %>% 
+  clean_names() %>% 
+  group_by(name) %>% 
+  arrange(start) %>%
+  add_column(color=c("#D3D3D3", "#D3D3D3", "#5a5a5a","#D3D3D3", "#FFA500")) %>% 
+  as_tibble()
+
+dft_conflicts <- read_csv("List_of_Conflicts_Russia.csv") %>% 
+  clean_names() %>% 
+  arrange(start) %>%
+  add_column(number=1:15) %>% 
+  as_tibble()
+```
+
+Nothing too fancy here. Just loading the datasets. I am adding some colors to make it clear when Putin was Prime Minister of Russia for the second time. 
+
+# Timeline of Russian Presidents
+
+```{r}
+vistime::gg_vistime(
+   dft_presidents,
+   col.event = "position",
+   col.group = "name",
+   col.color = "color",
+   title = "Timeline of Presidents"
+ )
+```
+
+The Russian Constitution makes the President the [Supreme Commander in Chief of the Russian Armed Forces](https://www.departments.bucknell.edu/russian/const/ch4.html).
+
+***Article 83:***
+
+> The President of the Russian Federation shall: [...] g) form and head the Security Council of the Russian Federation, the status of which is determined by federal law; h) endorse the military doctrine of the Russian Federation; i) form the staff of the President of the Russian Federation; [...] k) appoint and dismiss the Supreme Command of the Armed Forces of the Russian Federation; [...]
+
+***Article 87:***
+
+> 1. The President of the Russian Federation shall be the Supreme Commander-in-Chief of the Armed Forces of the Russian Federation.
+2. In the event of aggression against the Russian Federation or an immediate threat thereof, the President of the Russian Federation shall introduce martial law on the territory of the Russian Federation or in areas thereof with immediate notification thereof of the Federation Council and the State Duma. 
+
+***Article 89***
+
+> The President of the Russian Federation shall: [...] b) award state decorations of the Russian Federation, confer honorary titles of the Russian Federation and top military ranks and top specialized titles; [c) grant pardon.[...]
+
+# Timeline of the conflicts
+
+```{r}
+vistime::gg_vistime(
+   dft_conflicts,
+   col.event = "number",
+   col.group = "conflict",
+   col.color = "color",
+   title = "Timeline of conflicts"
+   )
+```
+First of all: Orange shows ongoing conflicts.
+
+Every conflict from the [Second Chechen war](https://www.dw.com/en/opinion-russia-still-lives-in-the-shadow-of-the-chechen-war/a-50609732) on saw Putin as either Prime Minister or President.
+
+
+```{r}
+map.world <- map_data("world")
+map.world_joined <- left_join(map.world, dft_conflicts, by = c("region" = "country"))
+map.world_joined <- map.world_joined %>% 
+  mutate(fill_flg = ifelse(is.na(conflict), F, T))
+
+ggplot()+
+  geom_polygon(data = map.world_joined, aes(x=long, y=lat, group=group,fill=fill_flg))+
+  scale_fill_manual(values = c("#D3D3D3", "#FFA500"))+
+  labs(title = "Location of Conflicts")+
+  theme(axis.text = element_blank(), axis.title = element_blank(), axis.ticks = element_blank(), legend.position = "none")
+```
+
