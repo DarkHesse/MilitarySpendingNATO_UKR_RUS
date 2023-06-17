@@ -10,7 +10,7 @@ output:
     theme: journal
     df_print: paged
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r, Setup, message=FALSE, include=FALSE}
@@ -27,7 +27,7 @@ library(here)
 
 # Version:
 
-Last change: June 16th 2023
+Last change: June 17th 2023
 
 # Introduction
 
@@ -200,6 +200,8 @@ dft_GDP
 ## % of Government spending
 
 ```{r, OverviewGovtSPending}
+intercept <- dft_sum_government_spending_ww$mean
+
 ggplot(dft_sum_government_spending)+
   geom_errorbar(
     mapping = aes(
@@ -216,9 +218,15 @@ ggplot(dft_sum_government_spending)+
   scale_x_discrete(
     labels=abbreviate
   )+
+  geom_hline(
+    yintercept= intercept
+  )+
   labs(
     title="Summary of Military spending as % of Government spending by Country", 
     subtitle = "Mean, Min and Max for the years 1990 - 2022 where available."
+  )+
+  theme(
+    axis.text.x = element_text(angle = 90)
   )
 
 dft_sum_government_spending
@@ -239,6 +247,9 @@ ggplot(dft_sum_government_spending_PA)+
       x = Year,
       y = mean,
     )
+  )+
+  geom_hline(
+    yintercept= intercept
   )+
   labs(
     title="Summary of Military spending as % of Government spending by Year", 
