@@ -2,7 +2,7 @@
 title: "Conflicts involving the Military of the Russian Federation"
 subtitle: "An overview"
 author: "Thomas McKinney"
-date: "June 17th 2023"
+date: "June 18th 2023"
 output:
   html_document:
     toc: true
@@ -13,22 +13,25 @@ editor_options:
   chunk_output_type: inline
 ---
 
-
 # tl;dr
 
-- Countries seem to be more willing to invest a significant amout of their Government spending/GDP on military matters, if they are involved in (civil-)wars. 
-
-- No NATO member -not even the USA- or Russia was among the top 10 of the big spenders since 1990 in terms of % of government spending or % of GDP. Ukraine was.
+* Russia is not the paragon of peace certain pundits in political discussions make it out to be.
+* Putin has officially/unofficially been Commander in Chief of the Russian Armed Forces since 1999.
+* Under his presidency Russia has involved itself in conflicts abroad.
+* This includes conflicts, that involve some level of participation by the USA, NATO, and the EU.
+* It also includes wars of aggression against sovereign Nations, and a track record of war crimes.
 
 # Version:
 
-Last change: June 17th 2023
+Last change: June 18th 2023
 
 # Introduction
 
-# Libraries
+Welcome to my very first R Notebook. I've only recently started playing around with exploratory Data Analysis in R. By inclination I'd describe myself more as a historian, than a (budding) Data Scientist. This notebook is a work in progress, so: I'd welcome any and all feedback. :-)
 
-```{r, Setup, message=FALSE}
+Certain voices in the political arena paint a picture of Russia as a peaceful state, that is the victim of US/NATO/EU aggression. In this Notebook I will not address the second of the statement, even though I do believe it is both wrong and very problematic. I am aiming to show however, that the first half of the statement is wrong. Looking at the involvement of the Russian Armed Forces shows, that Russia is a rather aggressive player on the world stage. And it does not take a very complicated analysis to show this.
+
+```{r, Setup, message=FALSE,echo=FALSE}
 library(tidyverse)
 library(janitor)
 library(here)
@@ -39,15 +42,15 @@ library(maps)
 
 # Loading the Data
 
-```{r, message=FALSE}
-dft_presidents <- read_csv("Russian_Presidents.csv") %>% 
+```{r, message=FALSE, echo=FALSE}
+dft_presidents <- read_csv("Russian_Presidents.csv", show_col_types = FALSE) %>% 
   clean_names() %>% 
   group_by(name) %>% 
   arrange(start) %>%
   add_column(color=c("#D3D3D3", "#D3D3D3", "#5a5a5a","#D3D3D3", "#FFA500")) %>% 
   as_tibble()
 
-dft_conflicts <- read_csv("List_of_Conflicts_Russia.csv") %>% 
+dft_conflicts <- read_csv("List_of_Conflicts_Russia.csv", show_col_types = FALSE) %>% 
   clean_names() %>% 
   arrange(start) %>%
   add_column(number=1:15) %>% 
@@ -56,9 +59,9 @@ dft_conflicts <- read_csv("List_of_Conflicts_Russia.csv") %>%
 
 Nothing too fancy here. Just loading the datasets. I am adding some colors to make it clear when Putin was Prime Minister of Russia for the second time. 
 
-# Timeline of Russian Presidents
+# Timeline and Powers of Russian Presidents
 
-```{r}
+```{r, message=FALSE, echo=FALSE}
 vistime::gg_vistime(
    dft_presidents,
    col.event = "position",
@@ -68,7 +71,7 @@ vistime::gg_vistime(
  )
 ```
 
-The Russian Constitution makes the President the [Supreme Commander in Chief of the Russian Armed Forces](https://www.departments.bucknell.edu/russian/const/ch4.html).
+The Russian Constitution makes the President the [Supreme Commander in Chief of the Russian Armed Forces](https://www.departments.bucknell.edu/russian/const/ch4.html). The graph above is somewhat misleading, though. There was no real change of power during Medvedevs term of office as [president](https://www.britannica.com/question/Why-is-Vladimir-Putin-still-in-power). Medvedev was very much Putins [puppet](https://www.spiegel.de/international/world/the-puppet-president-medvedev-s-betrayal-of-russian-democracy-a-789767.html). De facto Putin has been calling the shots [since the late Yeltsin administration](https://inews.co.uk/news/world/when-did-vladimir-putin-come-to-power-how-long-he-has-been-russias-president-and-if-he-can-be-removed-1497977).
 
 ***Article 83:***
 
@@ -83,9 +86,9 @@ The Russian Constitution makes the President the [Supreme Commander in Chief of 
 
 > The President of the Russian Federation shall: [...] b) award state decorations of the Russian Federation, confer honorary titles of the Russian Federation and top military ranks and top specialized titles; [c) grant pardon.[...]
 
-# Timeline of the conflicts
+# Timeline and locations of the conflicts
 
-```{r}
+```{r, message=FALSE, echo=FALSE}
 vistime::gg_vistime(
    dft_conflicts,
    col.event = "number",
@@ -93,15 +96,14 @@ vistime::gg_vistime(
    col.color = "color",
    title = "Timeline of conflicts"
    )
+
+dft_conflicts
 ```
 First of all: Orange shows ongoing conflicts.
 
-Every conflict from the [Second Chechen war](https://www.dw.com/en/opinion-russia-still-lives-in-the-shadow-of-the-chechen-war/a-50609732) on saw Putin as either Prime Minister or President.
-
-
-```{r}
+```{r, message=FALSE, echo=FALSE}
 map.world <- map_data("world")
-map.world_joined <- left_join(map.world, dft_conflicts, by = c("region" = "country"))
+map.world_joined <- left_join(map.world, dft_conflicts, by = c("region" = "country"), relationship = "many-to-many")
 map.world_joined <- map.world_joined %>% 
   mutate(fill_flg = ifelse(is.na(conflict), F, T))
 
@@ -112,3 +114,17 @@ ggplot()+
   theme(axis.text = element_blank(), axis.title = element_blank(), axis.ticks = element_blank(), legend.position = "none")
 ```
 
+Quite a few conflicts happened on what is considered to be Russian territory. Hence Russia is shown here as a conflict location.
+
+Every conflict from the [Second Chechen war](https://www.dw.com/en/opinion-russia-still-lives-in-the-shadow-of-the-chechen-war/a-50609732) on saw Putin as either Prime Minister or President. In his second term as president, Russia seems to have taken to engaging in conflicts that do not happen on former Soviet territory (Central African Republic, Syria, Mali) or on Russian soil. Russia also seems to be more willing to involve itself in conflicts, that see a participation of it's political rivals (USA, NATO, EU). More importantly: Russia under Putin has been more than willing, to attack neighbouring states, that were seeking to align themselves with the West (Georgia, Ukraine). Russia also showed a tendency to commit war crimes, as both [Syria](https://www.theguardian.com/world/2020/mar/02/russia-committed-war-crimes-in-syria-finds-un-report) and the [Ukraine](https://www.ohchr.org/en/press-releases/2023/03/war-crimes-indiscriminate-attacks-infrastructure-systematic-and-widespread) show.
+
+# Bottom lines
+
+* Putin has officially/unofficially been Commander in Chief of the Russian Armed Forces since 1999.
+* Under his presidency Russia has involved itself in conflicts abroad.
+* This includes conflicts, that involve some level of participation by the USA, NATO, and the EU.
+* It also includes wars of aggression against sovereign Nations.
+
+# Conclusion
+
+I believe, that it is fair to say, that Russia under Putin has been following a more aggressive course in foreign affairs. This undermines the narrative by some that Russia is a peaceful state, only seeking trade and cooperation. Much like everyone else, Russia is looking out for what it deems it's national interests.
